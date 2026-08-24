@@ -10,22 +10,31 @@ const openCount = computed(() => incidents.value.filter(i => i.status === "Open"
 const highCount = computed(() => incidents.value.filter(i => i.priority === "High").length);
 
 async function loadIncidents() {
-  const response = await fetch("http://localhost:5000/api/incidents");
-  incidents.value = await response.json();
+  try {
+    const response = await fetch("https://onrender.com");
+    incidents.value = await response.json();
+  } catch (error) {
+    console.error("Error loading incidents:", error);
+  }
 }
 
 async function createIncident() {
   if (!title.value.trim()) return;
   loading.value = true;
-  await fetch("http://localhost:5000/api/incidents", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title: title.value, priority: priority.value })
-  });
-  title.value = "";
-  priority.value = "Medium";
-  await loadIncidents();
-  loading.value = false;
+  try {
+    await fetch("https://onrender.com", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: title.value, priority: priority.value })
+    });
+    title.value = "";
+    priority.value = "Medium";
+    await loadIncidents();
+  } catch (error) {
+    console.error("Error creating incident:", error);
+  } finally {
+    loading.value = false;
+  }
 }
 
 onMounted(loadIncidents);
@@ -58,7 +67,7 @@ onMounted(loadIncidents);
           <option>Critical</option>
         </select>
         <button :disabled="loading" @click="createIncident">
-          {{ loading ? "Creating..." : "Create ticket" }}
+          {{ loading ? "Creating..." : "Create Ticket" }}
         </button>
       </div>
     </section>
@@ -71,14 +80,15 @@ onMounted(loadIncidents);
       <div v-if="!incidents.length" class="empty">No incidents yet.</div>
       <div v-for="incident in incidents" :key="incident.id" class="ticket">
         <div>
-          <strong>#{{ incident.id }} — {{ incident.title }}</strong>
-          <small>{{ incident.assignee }} · {{ incident.created_at }}</small>
+          <strong>#{{ incident.id }} - {{ incident.title }}</strong>
+          <small>{{ incident.assignee || 'Unassigned' }} • {{ incident.created_at }}</small>
         </div>
         <div class="badges">
-          <span class="badge">{{ incident.priority }}</span>
-          <span class="badge">{{ incident.status }}</span>
+          <span class="badge" :class="incident.priority">{{ incident.priority }}</span>
+          <span class="badge" :class="incident.status">{{ incident.status }}</span>
         </div>
       </div>
     </section>
   </main>
 </template>
+
