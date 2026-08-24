@@ -11,7 +11,7 @@ const highCount = computed(() => incidents.value.filter(i => i.priority === "Hig
 
 async function loadIncidents() {
   try {
-    const response = await fetch("https://onrender.com");
+    const response = await fetch("https://itops360-backend.onrender.com/api/incidents");
     incidents.value = await response.json();
   } catch (error) {
     console.error("Error loading incidents:", error);
@@ -22,7 +22,7 @@ async function createIncident() {
   if (!title.value.trim()) return;
   loading.value = true;
   try {
-    await fetch("https://onrender.com", {
+    await fetch("https://itops360-backend.onrender.com/api/incidents", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: title.value, priority: priority.value })
